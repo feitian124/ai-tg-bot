@@ -14,6 +14,7 @@ type stateFn func(*echotron.Update) stateFn
 type TGUser echotron.User
 
 // Bot represent a user of both telegram and openai, and as middle man exchange information between the 2 platform.
+// it is stateful
 type Bot struct {
 	TGUser *TGUser
 	AIUser *AIUser
@@ -56,7 +57,6 @@ func (b *Bot) handleMessage(update *echotron.Update) stateFn {
 	var ok bool
 	if user, ok = users[update.Message.From.ID]; !ok {
 		user = &AIUser{
-			TelegramID:     update.Message.From.ID,
 			LastActiveTime: time.Now(),
 			HistoryMessage: []openai.ChatCompletionMessage{},
 		}

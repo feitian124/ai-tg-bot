@@ -8,9 +8,8 @@ import (
 	"time"
 )
 
-// AIUser represent a user of openai
+// AIUser represent a user of openai, it is stateless
 type AIUser struct {
-	TelegramID     int64
 	LastActiveTime time.Time
 	HistoryMessage []openai.ChatCompletionMessage
 	LatestMessage  echotron.Message
@@ -60,7 +59,8 @@ func (user *AIUser) sendAndSaveMsg(msg string) (string, bool, error) {
 func (user *AIUser) clearUserContextIfExpires() bool {
 	if user != nil &&
 		user.LastActiveTime.Add(time.Duration(cfg.Openai.IdleTimeout)*time.Second).Before(time.Now()) {
-		resetUser(user.TelegramID)
+		// todo
+		//resetUser(user.TelegramID)
 		return true
 	}
 
