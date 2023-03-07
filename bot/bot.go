@@ -2,7 +2,9 @@ package bot
 
 import (
 	"github.com/NicoNex/echotron/v3"
+	"github.com/sashabaranov/go-openai"
 	"log"
+	"time"
 )
 
 // Recursive type definition of the bot state function.
@@ -45,7 +47,18 @@ func (b *bot) handleMessage(update *echotron.Update) stateFn {
 		return b.handleCommand(msg)
 	}
 
-	answerText, contextTrimmed, err := handleUserPrompt(update.Message.From.ID, update.Message.Text)
+	var user *User
+	var ok bool
+	if user, ok = users[update.Message.From.ID]; !ok {
+		user = &User{
+			TelegramID:     update.Message.From.ID,
+			LastActiveTime: time.Now(),
+			HistoryMessage: []openai.ChatCompletionMessage{},
+		}
+	}
+
+	user.clearUserContextIfExpires()
+	answerText, contextTrimmed, err := user.sendAndSaveMsg(update.Message.Text)
 	_, err = b.SendMessage(answerText, b.chatID, nil)
 	if err != nil {
 		log.Printf("error: %+v\n", err)
@@ -67,7 +80,7 @@ func (b *bot) handleCommand(msg *Message) stateFn {
 	case "help":
 		msg.Text = "Write something to start a conversation. Use /new to start a new conversation."
 	default:
-		msg.Text = "I don't know that command"
+		msg.Text = "I don't know that command."
 	}
 	_, err := b.SendMessage(msg.Text, b.chatID, nil)
 	if err != nil {
