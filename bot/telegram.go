@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// Recursive type definition of the TGUser state function.
+// Recursive type definition of the Bot state function.
 type stateFn func(*echotron.Update) stateFn
 
 // TGUser represent a user of telegram
@@ -30,10 +30,13 @@ var commands = []echotron.BotCommand{
 
 func NewBot(chatID int64) echotron.Bot {
 	bot := &Bot{
+		AIUser: &AIUser{
+			LastActiveTime: time.Now(),
+			HistoryMessage: []openai.ChatCompletionMessage{},
+		},
 		chatID: chatID,
 		API:    echotron.NewAPI(cfg.TG.Token),
 	}
-	// We set the default state to the TGUser.handleMessage method.
 	bot.state = bot.handleMessage
 	_, err := bot.SetMyCommands(nil, commands...)
 	if err != nil {
@@ -48,22 +51,10 @@ func (b *Bot) Update(update *echotron.Update) {
 }
 
 func (b *Bot) handleMessage(update *echotron.Update) stateFn {
-	msg := &Message{update.Message}
-	if msg.IsCommand() {
-		return b.handleCommand(msg)
+	if IsCommand(update.Message) {
+		return b.handleCommand(update)
 	}
-
-	var user *AIUser
-	var ok bool
-	if user, ok = users[update.Message.From.ID]; !ok {
-		user = &AIUser{
-			LastActiveTime: time.Now(),
-			HistoryMessage: []openai.ChatCompletionMessage{},
-		}
-	}
-
-	user.clearUserContextIfExpires()
-	answerText, contextTrimmed, err := user.sendAndSaveMsg(update.Message.Text)
+	answerText, contextTrimmed, err := b.AIUser.sendAndSaveMsg(update.Message.Text)
 	_, err = b.SendMessage(answerText, b.chatID, nil)
 	if err != nil {
 		log.Printf("error: %+v\n", err)
@@ -77,10 +68,11 @@ func (b *Bot) handleMessage(update *echotron.Update) stateFn {
 	return b.handleMessage
 }
 
-func (b *Bot) handleCommand(msg *Message) stateFn {
+func (b *Bot) handleCommand(update *echotron.Update) stateFn {
+	msg := &Message{update.Message}
 	switch msg.Command() {
 	case "new":
-		resetUser(msg.From.ID)
+		dsp.DelSession(update.ChatID())
 		msg.Text = "OK, let's start a new conversation."
 	case "help":
 		msg.Text = "Write something to start a conversation. Use /new to start a new conversation."

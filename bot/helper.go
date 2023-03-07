@@ -49,3 +49,12 @@ func (m *Message) CommandWithAt() string {
 	entity := m.Entities[0]
 	return m.Text[1:entity.Length]
 }
+
+func IsCommand(m *echotron.Message) bool {
+	if m.Entities == nil || len(m.Entities) == 0 {
+		return false
+	}
+
+	entity := m.Entities[0]
+	return entity.Offset == 0 && entity.Type == echotron.BotCommandEntity
+}

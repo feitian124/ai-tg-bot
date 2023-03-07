@@ -19,9 +19,9 @@ var cfg struct {
 	}
 }
 
-var users = make(map[int64]*AIUser)
-
 var client *openai.Client
+
+var dsp *echotron.Dispatcher
 
 func Start() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
@@ -34,7 +34,7 @@ func Start() {
 	client = openai.NewClient(cfg.Openai.Key)
 
 	// makes a new instance of the struct TGUser for each open chat with a Telegram user, channel or group.
-	dsp := echotron.NewDispatcher(cfg.TG.Token, NewBot)
+	dsp = echotron.NewDispatcher(cfg.TG.Token, NewBot)
 	log.Printf("bots started ...")
 	log.Printf("%+v", dsp.Poll())
 }

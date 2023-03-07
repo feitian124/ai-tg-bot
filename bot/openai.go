@@ -15,10 +15,6 @@ type AIUser struct {
 	LatestMessage  echotron.Message
 }
 
-func resetUser(userID int64) {
-	delete(users, userID)
-}
-
 func (user *AIUser) sendAndSaveMsg(msg string) (string, bool, error) {
 	user.HistoryMessage = append(user.HistoryMessage, openai.ChatCompletionMessage{
 		Role:    "user",
@@ -54,15 +50,4 @@ func (user *AIUser) sendAndSaveMsg(msg string) (string, bool, error) {
 	}
 
 	return answer.Content, contextTrimmed, nil
-}
-
-func (user *AIUser) clearUserContextIfExpires() bool {
-	if user != nil &&
-		user.LastActiveTime.Add(time.Duration(cfg.Openai.IdleTimeout)*time.Second).Before(time.Now()) {
-		// todo
-		//resetUser(user.TelegramID)
-		return true
-	}
-
-	return false
 }
