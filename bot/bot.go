@@ -1,11 +1,8 @@
 package bot
 
 import (
-	"fmt"
-	"log"
-	"strings"
-
 	"github.com/NicoNex/echotron/v3"
+	"log"
 )
 
 // Recursive type definition of the bot state function.
@@ -43,16 +40,6 @@ func (b *bot) Update(update *echotron.Update) {
 }
 
 func (b *bot) handleMessage(update *echotron.Update) stateFn {
-	if strings.HasPrefix(update.Message.Text, "/set_name") {
-		_, err := b.SendMessage("Send me my new name!", b.chatID, nil)
-		if err != nil {
-			log.Printf("error: %+v\n", err)
-		}
-		// Here we return b.handleName since next time we receive a message it
-		// will be the new name.
-		return b.handleName
-	}
-
 	msg := &Message{update.Message}
 	if msg.IsCommand() {
 		return b.handleCommand(msg)
@@ -69,18 +56,6 @@ func (b *bot) handleMessage(update *echotron.Update) stateFn {
 			log.Printf("error: %+v\n", err)
 		}
 	}
-
-	return b.handleMessage
-}
-
-func (b *bot) handleName(update *echotron.Update) stateFn {
-	b.name = update.Message.Text
-	_, err := b.SendMessage(fmt.Sprintf("My new name is %q", b.name), b.chatID, nil)
-	if err != nil {
-		log.Printf("error: %+v\n", err)
-	}
-	// Here we return b.handleMessage since the next time we receive a message
-	// it will be handled in the default way.
 	return b.handleMessage
 }
 
