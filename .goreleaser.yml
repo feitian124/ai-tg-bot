@@ -21,6 +21,5 @@ archives:
     #  `license*`, `readme*` and `changelog*`.
     files:
       - LICENSE
-      - README_*.md
-      - CHANGELOG.md
+      - README*.md
       - config.yml
