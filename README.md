@@ -18,10 +18,16 @@ simple openai ChatGPT Telegram bot with one binary file.
 
    Create a bot from Telegram [@BotFather](https://t.me/BotFather) and obtain an access token.
 
-3. Install 
+3. Install
 
 ```shell
-curl -SL https://github.com/feitian124/ai-tg-bot/releases/download/v0.1.0/ai-tg-bot_0.1.0_linux_amd64.tar.gz -o bot.tar.gz && tar -zxvf bot.tar.gz && rm bot.tar.gz
+# 1. download and untar, change version like 0.1.1 in url if need
+curl -SL https://github.com/feitian124/ai-tg-bot/releases/download/v0.1.1/ai-tg-bot_0.1.1_linux_amd64.tar.gz -o bot.tar.gz && tar -zxvf bot.tar.gz && rm bot.tar.gz
+
+# 2. update config.yml as need
+
+# 3. start server
+./ai-tg-bot
 ```
 
 ## develop
@@ -31,6 +37,6 @@ cp config.yml config.development.yml
 # edit config.development.yml as need, it is ignored by git
 # both will load and `config.development.json` will overwrite `config.json`'s configuration
 
-# can restart manually
+# if need restart manually
 go run main.go
 ```

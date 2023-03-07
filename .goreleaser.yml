@@ -1,12 +1,6 @@
 project_name: ai-tg-bot
 archives:
   -
-    # Archive format. Valid options are `tar.gz`, `tar.xz`, `tar`, `gz`, `zip` and `binary`.
-    # If format is `binary`, no archives are created and the binaries are instead
-    # uploaded directly.
-    # Default is `tar.gz`.
-    format: zip
-
     # This will make the destination paths be relative to the longest common
     # path prefix between all the files matched and the source glob.
     # Enabling this essentially mimic the behavior of nfpm's contents section.
