@@ -28,8 +28,8 @@ func (user *User) sendAndSaveMsg(msg string) (string, bool, error) {
 
 	req := openai.ChatCompletionRequest{
 		Model:       openai.GPT3Dot5Turbo,
-		Temperature: cfg.ModelTemperature,
-		TopP:        1,
+		Temperature: cfg.Openai.Temperature,
+		TopP:        1.0,
 		N:           1,
 		Messages:    user.HistoryMessage,
 	}

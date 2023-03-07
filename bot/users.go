@@ -10,7 +10,7 @@ var users = make(map[int64]*User)
 func clearUserContextIfExpires(userID int64) bool {
 	user := users[userID]
 	if user != nil &&
-		user.LastActiveTime.Add(time.Duration(cfg.ConversationIdleTimeoutSeconds)*time.Second).Before(time.Now()) {
+		user.LastActiveTime.Add(time.Duration(cfg.Openai.IdleTimeout)*time.Second).Before(time.Now()) {
 		resetUser(userID)
 		return true
 	}

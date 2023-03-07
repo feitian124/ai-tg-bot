@@ -26,7 +26,7 @@ var commands = []echotron.BotCommand{
 func newBot(chatID int64) echotron.Bot {
 	bot := &bot{
 		chatID: chatID,
-		API:    echotron.NewAPI(cfg.TelegramToken),
+		API:    echotron.NewAPI(cfg.TG.Token),
 	}
 	// We set the default state to the bot.handleMessage method.
 	bot.state = bot.handleMessage

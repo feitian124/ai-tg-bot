@@ -1,0 +1,11 @@
+tg:
+  token:
+  # optional, default is empty. Only allow these users to use the bot. Empty means allow all users.
+  allowed_ids:
+openai:
+  key:
+  # optional, default is 1.0. Higher temperature means more random responses.
+  # See https://platform.openai.com/docs/api-reference/chat/create#chat/create-temperature
+  temperature: 1.0
+  # Max idle duration for a certain conversation in seconds
+  idle_timeout: 180
