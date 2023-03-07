@@ -2,89 +2,39 @@ package bot
 
 import (
 	"github.com/NicoNex/echotron/v3"
+	"github.com/jinzhu/configor"
 	"github.com/sashabaranov/go-openai"
 	"log"
-	"time"
 )
 
-// Recursive type definition of the bot state function.
-type stateFn func(*echotron.Update) stateFn
-
-type bot struct {
-	chatID int64
-	state  stateFn
-	name   string
-	echotron.API
-}
-
-var commands = []echotron.BotCommand{
-	{Command: "new", Description: "New conversation"},
-	{Command: "help", Description: "Show help"},
-}
-
-func newBot(chatID int64) echotron.Bot {
-	bot := &bot{
-		chatID: chatID,
-		API:    echotron.NewAPI(cfg.TG.Token),
+var cfg struct {
+	TG struct {
+		Token      string `required:"true"`
+		AllowedIds string
 	}
-	// We set the default state to the bot.handleMessage method.
-	bot.state = bot.handleMessage
-	_, err := bot.SetMyCommands(nil, commands...)
+	Openai struct {
+		Key         string  `required:"true"`
+		Temperature float32 `default:"1.0"`
+		IdleTimeout uint    `default:"60"`
+	}
+}
+
+var users = make(map[int64]*AIUser)
+
+var client *openai.Client
+
+func Start() {
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+
+	err := configor.New(&configor.Config{Debug: true}).Load(&cfg, "config.yml")
 	if err != nil {
-		log.Printf("error: %+v\n", err)
-	}
-	return bot
-}
-
-func (b *bot) Update(update *echotron.Update) {
-	// Here we execute the current state and set the next one.
-	b.state = b.state(update)
-}
-
-func (b *bot) handleMessage(update *echotron.Update) stateFn {
-	msg := &Message{update.Message}
-	if msg.IsCommand() {
-		return b.handleCommand(msg)
+		log.Fatalf("%+v", err)
 	}
 
-	var user *User
-	var ok bool
-	if user, ok = users[update.Message.From.ID]; !ok {
-		user = &User{
-			TelegramID:     update.Message.From.ID,
-			LastActiveTime: time.Now(),
-			HistoryMessage: []openai.ChatCompletionMessage{},
-		}
-	}
+	client = openai.NewClient(cfg.Openai.Key)
 
-	user.clearUserContextIfExpires()
-	answerText, contextTrimmed, err := user.sendAndSaveMsg(update.Message.Text)
-	_, err = b.SendMessage(answerText, b.chatID, nil)
-	if err != nil {
-		log.Printf("error: %+v\n", err)
-	}
-	if contextTrimmed {
-		_, err := b.SendMessage("Context trimmed.", b.chatID, nil)
-		if err != nil {
-			log.Printf("error: %+v\n", err)
-		}
-	}
-	return b.handleMessage
-}
-
-func (b *bot) handleCommand(msg *Message) stateFn {
-	switch msg.Command() {
-	case "new":
-		resetUser(msg.From.ID)
-		msg.Text = "OK, let's start a new conversation."
-	case "help":
-		msg.Text = "Write something to start a conversation. Use /new to start a new conversation."
-	default:
-		msg.Text = "I don't know that command."
-	}
-	_, err := b.SendMessage(msg.Text, b.chatID, nil)
-	if err != nil {
-		log.Printf("error: %+v\n", err)
-	}
-	return b.handleMessage
+	// makes a new instance of the struct TGUser for each open chat with a Telegram user, channel or group.
+	dsp := echotron.NewDispatcher(cfg.TG.Token, NewBot)
+	log.Printf("bots started ...")
+	log.Printf("%+v", dsp.Poll())
 }

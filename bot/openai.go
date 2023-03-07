@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type User struct {
+type AIUser struct {
 	TelegramID     int64
 	LastActiveTime time.Time
 	HistoryMessage []openai.ChatCompletionMessage
@@ -19,7 +19,7 @@ func resetUser(userID int64) {
 	delete(users, userID)
 }
 
-func (user *User) sendAndSaveMsg(msg string) (string, bool, error) {
+func (user *AIUser) sendAndSaveMsg(msg string) (string, bool, error) {
 	user.HistoryMessage = append(user.HistoryMessage, openai.ChatCompletionMessage{
 		Role:    "user",
 		Content: msg,
@@ -54,4 +54,14 @@ func (user *User) sendAndSaveMsg(msg string) (string, bool, error) {
 	}
 
 	return answer.Content, contextTrimmed, nil
+}
+
+func (user *AIUser) clearUserContextIfExpires() bool {
+	if user != nil &&
+		user.LastActiveTime.Add(time.Duration(cfg.Openai.IdleTimeout)*time.Second).Before(time.Now()) {
+		resetUser(user.TelegramID)
+		return true
+	}
+
+	return false
 }
