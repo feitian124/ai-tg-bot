@@ -18,31 +18,19 @@ simple openai ChatGPT Telegram bot with one binary file.
 
    Create a bot from Telegram [@BotFather](https://t.me/BotFather) and obtain an access token.
 
-3. Install using `go install`
+3. Install 
 
-   If you have a Go environment, you can install it with the following command.
+```shell
+curl -SL https://github.com/feitian124/ai-tg-bot/releases/download/v0.1.0/ai-tg-bot_0.1.0_linux_amd64.tar.gz -o bot.tar.gz && tar -zxvf bot.tar.gz && rm bot.tar.gz
+```
 
-4. Install using binary
+## develop
 
-   You can get prebuilt binaries from [GitHub Releases](https://github.com/feitian124/ai-tg-bot/releases) and put it in `$PATH`
+```shell
+cp config.yml config.development.yml 
+# edit config.development.yml as need, it is ignored by git
+# both will load and `config.development.json` will overwrite `config.json`'s configuration
 
-5. Install using Docker-compose(todo)
-
-   Check out [docker-compose.yml](docker-compose.yml) for sample config
-
-6. Set the environment variables and run, see `start.sh`. You should build first `go build -o ai-tg-bot main.go`.
-
-```bash
-export OPENAI_KEY=<update_me>
-export TELEGRAM_TOKEN=<update_me>
-# optional, default is empty. Only allow these users to use the bot. Empty means allow all users.
-export ALLOWED_TELEGRAM_ID=
-# optional, default is 1.0. Higher temperature means more random responses.
-# See https://platform.openai.com/docs/api-reference/chat/create#chat/create-temperature
-export MODEL_TEMPERATURE=1.0
-# optional, default is 60. Max idle duration for a certain conversation.
-# After this duration, a new conversation will be started.
-export CONVERSATION_IDLE_TIMEOUT_SECONDS=60
-
-./ai-tg-bot
+# can restart manually
+go run main.go
 ```
