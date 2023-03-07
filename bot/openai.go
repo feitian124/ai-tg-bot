@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// AIUser represent a user of openai
 type AIUser struct {
 	TelegramID     int64
 	LastActiveTime time.Time

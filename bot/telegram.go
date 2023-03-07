@@ -10,10 +10,15 @@ import (
 // Recursive type definition of the TGUser state function.
 type stateFn func(*echotron.Update) stateFn
 
-type TGUser struct {
+// TGUser represent a user of telegram
+type TGUser echotron.User
+
+// Bot represent a user of both telegram and openai, and as middle man exchange information between the 2 platform.
+type Bot struct {
+	TGUser *TGUser
+	AIUser *AIUser
 	chatID int64
 	state  stateFn
-	name   string
 	echotron.API
 }
 
@@ -23,7 +28,7 @@ var commands = []echotron.BotCommand{
 }
 
 func NewBot(chatID int64) echotron.Bot {
-	bot := &TGUser{
+	bot := &Bot{
 		chatID: chatID,
 		API:    echotron.NewAPI(cfg.TG.Token),
 	}
@@ -36,12 +41,12 @@ func NewBot(chatID int64) echotron.Bot {
 	return bot
 }
 
-func (b *TGUser) Update(update *echotron.Update) {
+func (b *Bot) Update(update *echotron.Update) {
 	// Here we execute the current state and set the next one.
 	b.state = b.state(update)
 }
 
-func (b *TGUser) handleMessage(update *echotron.Update) stateFn {
+func (b *Bot) handleMessage(update *echotron.Update) stateFn {
 	msg := &Message{update.Message}
 	if msg.IsCommand() {
 		return b.handleCommand(msg)
@@ -72,7 +77,7 @@ func (b *TGUser) handleMessage(update *echotron.Update) stateFn {
 	return b.handleMessage
 }
 
-func (b *TGUser) handleCommand(msg *Message) stateFn {
+func (b *Bot) handleCommand(msg *Message) stateFn {
 	switch msg.Command() {
 	case "new":
 		resetUser(msg.From.ID)
