@@ -32,7 +32,7 @@ func NewBot(chatID int64) echotron.Bot {
 	bot := &Bot{
 		AIUser: &AIUser{
 			LastActiveTime: time.Now(),
-			HistoryMessage: []openai.ChatCompletionMessage{},
+			Messages:       []openai.ChatCompletionMessage{},
 		},
 		chatID: chatID,
 		API:    echotron.NewAPI(cfg.TG.Token),
