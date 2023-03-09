@@ -54,16 +54,10 @@ func (b *Bot) handleMessage(update *echotron.Update) stateFn {
 	if IsCommand(update.Message) {
 		return b.handleCommand(update)
 	}
-	answerText, contextTrimmed, err := b.AIUser.sendAndSaveMsg(update.Message.Text)
+	answerText, err := b.AIUser.sendAndSaveMsg(update.Message.Text)
 	_, err = b.SendMessage(answerText, b.chatID, nil)
 	if err != nil {
 		log.Printf("error: %+v\n", err)
-	}
-	if contextTrimmed {
-		_, err := b.SendMessage("Context trimmed.", b.chatID, nil)
-		if err != nil {
-			log.Printf("error: %+v\n", err)
-		}
 	}
 	return b.handleMessage
 }

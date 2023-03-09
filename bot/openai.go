@@ -13,14 +13,13 @@ type AIUser struct {
 	Messages       []openai.ChatCompletionMessage
 }
 
-func (user *AIUser) sendAndSaveMsg(msg string) (string, bool, error) {
-	ccm := openai.ChatCompletionMessage{
+func (user *AIUser) callOpenai(msg string) (openai.ChatCompletionResponse, error) {
+	m := openai.ChatCompletionMessage{
 		Role:    "user",
 		Content: msg,
 	}
-	user.Messages = append(user.Messages, ccm)
+	user.Messages = append(user.Messages, m)
 	user.LastActiveTime = time.Now()
-
 	req := openai.ChatCompletionRequest{
 		Model:       openai.GPT3Dot5Turbo,
 		Temperature: cfg.Openai.Temperature,
@@ -28,25 +27,19 @@ func (user *AIUser) sendAndSaveMsg(msg string) (string, bool, error) {
 		N:           1,
 		Messages:    user.Messages,
 	}
-
 	log.Printf("call openai %+v", msg)
-
 	resp, err := client.CreateChatCompletion(context.Background(), req)
+	return resp, err
+}
+
+func (user *AIUser) sendAndSaveMsg(msg string) (string, error) {
+	resp, err := user.callOpenai(msg)
 	if err != nil {
-		log.Print(err)
+		log.Printf("%+v", err)
 		user.Messages = user.Messages[:len(user.Messages)-1]
-		return "", false, err
+		return "", err
 	}
-
 	answer := resp.Choices[0].Message
-
 	user.Messages = append(user.Messages, answer)
-
-	var contextTrimmed bool
-	if resp.Usage.TotalTokens > 3500 {
-		user.Messages = user.Messages[1:]
-		contextTrimmed = true
-	}
-
-	return answer.Content, contextTrimmed, nil
+	return answer.Content, nil
 }
