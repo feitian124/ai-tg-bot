@@ -31,8 +31,8 @@ var commands = []echotron.BotCommand{
 func NewBot(chatID int64) echotron.Bot {
 	bot := &Bot{
 		AIUser: &AIUser{
-			LastActiveTime: time.Now(),
-			Messages:       []openai.ChatCompletionMessage{},
+			lastActiveTime: time.Now(),
+			messages:       []openai.ChatCompletionMessage{},
 		},
 		chatID: chatID,
 		API:    echotron.NewAPI(cfg.TG.Token),
@@ -54,10 +54,15 @@ func (b *Bot) handleMessage(update *echotron.Update) stateFn {
 	if IsCommand(update.Message) {
 		return b.handleCommand(update)
 	}
-	answerText, err := b.AIUser.sendAndSaveMsg(update.Message.Text)
-	_, err = b.SendMessage(answerText, b.chatID, nil)
+	answerText, err := b.AIUser.CallOpenai(update.Message.Text)
 	if err != nil {
 		log.Printf("error: %+v\n", err)
+	} else if len(answerText) > 0 {
+		// avoid send an empty message to telegram
+		_, err = b.SendMessage(answerText, b.chatID, nil)
+		if err != nil {
+			log.Printf("error: %+v\n", err)
+		}
 	}
 	return b.handleMessage
 }
