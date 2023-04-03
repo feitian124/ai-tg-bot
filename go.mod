@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/NicoNex/echotron/v3 v3.23.3
 	github.com/jinzhu/configor v1.2.1
-	github.com/sashabaranov/go-openai v1.5.0
+	github.com/sashabaranov/go-openai v1.5.8
 )
 
 require (
